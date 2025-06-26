@@ -71,7 +71,7 @@ class App:
         if self.service.running:
             self.service.stop()
         else:
-            script = self.text.get("1.0", tk.END).rstrip()
+            script = self.text.get("1.0", tk.END)
             try:
                 minutes = int(self.minutes_var.get())
                 seconds = int(self.seconds_var.get())
