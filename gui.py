@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import messagebox
 from service import Service
@@ -8,19 +7,29 @@ class App:
     def __init__(self, root):
         self.root = root
         self.root.title("Key Presser with Timer")
-        self.root.geometry("480x450")
+        self.root.geometry("480x500")  # Höhe angepasst für Checkbuttons
 
         self.service = Service(root)
         self.start_key = 'F2'
         self.listening = False
         self.hotkey_handle = None
 
-        tk.Label(root, text="Write Script", font= ("Helvetica", 16)).pack(pady=(10, 0))
+        # Script-Eingabe
+        tk.Label(root, text="Write Script", font=("Helvetica", 16)).pack(pady=(10, 0))
         self.text = tk.Text(root, height=10, width=30, font=("Helvetica", 16))
         self.text.pack(pady=(0, 10))
         self.text.focus_set()
 
+        # Optionen
+        self.var_letter = tk.BooleanVar(value=False)
+        tk.Checkbutton(root, text="Letter by Letter", variable=self.var_letter,
+                       font=("Helvetica", 14)).pack(pady=(0,5))
 
+        self.var_enter = tk.BooleanVar(value=False)
+        tk.Checkbutton(root, text="Press Enter at End", variable=self.var_enter,
+                       font=("Helvetica", 14)).pack(pady=(0,10))
+
+        # Interval-Eingabe
         frame = tk.Frame(root)
         frame.pack(pady=(0, 10))
 
@@ -31,18 +40,19 @@ class App:
 
         tk.Label(frame, text="Minutes:", font=("Helvetica", 16)).grid(row=0, column=0)
         self.minutes_var = tk.StringVar(value="0")
-        tk.Entry(frame, textvariable=self.minutes_var, width=5, validate="key", font = ("Helvetica", 16), validatecommand=vcmd).grid(row=0,
-                                                                                                           column=1)
+        tk.Entry(frame, textvariable=self.minutes_var, width=5, validate="key",
+                 font=("Helvetica", 16), validatecommand=vcmd).grid(row=0, column=1)
+
         tk.Label(frame, text="Seconds:", font=("Helvetica", 16)).grid(row=0, column=2)
         self.seconds_var = tk.StringVar(value="0")
-        tk.Entry(frame, textvariable=self.seconds_var, width=5, validate="key", font = ("Helvetica", 16), validatecommand=vcmd).grid(row=0,
-                                                                                                           column=3)
+        tk.Entry(frame, textvariable=self.seconds_var, width=5, validate="key",
+                 font=("Helvetica", 16), validatecommand=vcmd).grid(row=0, column=3)
 
-        tk.Label(root, text="Set Your Key to Start the Script", font = ("Helvetica", 16)).pack(pady=(10, 0))
-        self.key_button = tk.Button(root, text=self.start_key,width = 15, height = 1, font = ("Helvetica", 13),
-                                    command=self.listen_key)
+        # Hotkey-Einstellung
+        tk.Label(root, text="Set Your Key to Start the Script", font=("Helvetica", 16)).pack(pady=(10, 0))
+        self.key_button = tk.Button(root, text=self.start_key, width=15, height=1,
+                                    font=("Helvetica", 13), command=self.listen_key)
         self.key_button.pack(pady=(0, 10))
-
 
         self.register_hotkey()
 
@@ -71,6 +81,7 @@ class App:
         if self.service.running:
             self.service.stop()
         else:
+            # Script und Interval auslesen
             script = self.text.get("1.0", tk.END)
             try:
                 minutes = int(self.minutes_var.get())
@@ -79,8 +90,13 @@ class App:
                 messagebox.showerror("Invalid input", "Minutes and seconds must be integers.")
                 return
 
+            # Service konfigurieren
             self.service.set_script(script)
             self.service.set_interval(minutes, seconds)
+            # Optionen an Service weitergeben
+            self.service.enable_letter_by_letter(self.var_letter.get())
+            self.service.enable_press_enter(self.var_enter.get())
+            # Service starten
             self.service.start()
 
     def run(self):
